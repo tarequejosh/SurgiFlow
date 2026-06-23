@@ -1,0 +1,30 @@
+# Virtual Environment
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and Tensorboard
+*.log
+logs/
+tensorboard_logs/
+MUJOCO_LOG.TXT
+
+# Models and Checkpoints
+models/
+*.zip
+*.pt
+*.pth
+
+# IDE and OS
+.DS_Store
+.vscode/
+.idea/
+
+# Images/Gifs (optional, you can comment this out if you want to push the visual representations)
+# *.png
+# *.gif

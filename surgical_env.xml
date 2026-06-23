@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco model="surgical_tray_env">
+    <compiler angle="radian" coordinate="local" meshdir="assets/franka_assets/meshes"></compiler>
+    <option timestep="0.002">
+        <flag warmstart="enable"></flag>
+    </option>
+    <include file="assets/franka_assets/assets.xml"></include>
+
+    <asset>
+        <texture type="2d" name="texplane" builtin="checker" mark="cross" width="512" height="512" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8"></texture>
+        <material name="floor_mat" texture="texplane" texrepeat="5 5" specular="0.1" shininess="0.1" reflectance="0.1" rgba="1 1 1 1"></material>
+        <material name="table_mat" specular="0.2" shininess="0.1" reflectance="0" rgba="0.75 0.75 0.75 1"></material>
+        
+        <material name="tray1_mat" rgba="0.65 0.65 0.65 1" reflectance="0.5" specular="0.8" shininess="0.8"></material>
+        <material name="tray2_mat" rgba="0.65 0.65 0.65 1" reflectance="0.5" specular="0.8" shininess="0.8"></material>
+        <material name="tray3_mat" rgba="0.65 0.65 0.65 1" reflectance="0.5" specular="0.8" shininess="0.8"></material>
+        
+        <!-- Distinct tool handle colors -->
+        <material name="scalpel_mat" rgba="0.8 0.1 0.1 1" specular="0.5" shininess="0.5"></material>
+        <material name="grasper_mat" rgba="0.1 0.8 0.1 1" specular="0.5" shininess="0.5"></material>
+        <material name="scissors_mat" rgba="0.1 0.1 0.8 1" specular="0.5" shininess="0.5"></material>
+        
+        <!-- Metallic blade color -->
+        <material name="metal_mat" rgba="0.8 0.8 0.85 1" reflectance="0.8" specular="1" shininess="1"></material>
+        
+        <material name="robot0:geomMat" shininess="0.03" specular="0.4"></material>
+        <material name="robot0:gripper_finger_mat" rgba="0.1 0.1 0.1 1" shininess="0.03" specular="0.4" reflectance="0"></material>
+        <material name="robot0:gripper_mat" rgba="0.8 0.8 0.8 1" shininess="0.03" specular="0.4" reflectance="0"></material>
+    </asset>
+
+    <worldbody>
+        <!-- Lighting -->
+        <light directional="true" ambient="0.3 0.3 0.3" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="true" pos="0 0 3" dir="0 0 -1" name="light0"></light>
+        <light directional="true" ambient="0.1 0.1 0.1" diffuse="0.2 0.2 0.2" specular="0.1 0.1 0.1" castshadow="false" pos="2 -2 2" dir="-1 1 -1" name="light1"></light>
+        
+        <!-- Camera for rendering -->
+        <camera name="isometric_view" pos="0 -1.2 1.5" xyaxes="1 0 0 0 1 1"></camera>
+
+        <!-- Floor -->
+        <geom name="floor0" pos="0 0 0" size="2 2 1" type="plane" condim="3" material="floor_mat"></geom>
+
+        <!-- Table -->
+        <body name="table0" pos="0 0.2 0.4">
+            <!-- Table top (widened to fit 3 distinct zones) -->
+            <geom name="table0" size="0.8 0.4 0.4" type="box" mass="2000" material="table_mat"></geom>
+            
+            <!-- Tray 1: Storage (Left) -->
+            <body name="tray_storage" pos="-0.5 0.0 0.405">
+                <geom size="0.12 0.15 0.005" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.12 0.005 0.015" pos="0 0.145 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.12 0.005 0.015" pos="0 -0.145 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.005 0.15 0.015" pos="0.115 0 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.005 0.15 0.015" pos="-0.115 0 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
+                <site name="site_tray_storage" pos="0 0 0.01" size="0.02" rgba="1 0 0 0.5"></site>
+            </body>
+
+            <!-- Tray 2: Surgeon (Right) -->
+            <body name="tray_surgeon" pos="0.5 0.0 0.405">
+                <geom size="0.12 0.15 0.005" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.12 0.005 0.015" pos="0 0.145 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.12 0.005 0.015" pos="0 -0.145 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.005 0.15 0.015" pos="0.115 0 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.005 0.15 0.015" pos="-0.115 0 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
+                <site name="site_tray_surgeon" pos="0 0 0.01" size="0.02" rgba="0 1 0 0.5"></site>
+            </body>
+
+            <!-- Tray 3: Cleaning (Center Back - Separated) -->
+            <body name="tray_cleaning" pos="0.0 0.25 0.405">
+                <geom size="0.12 0.15 0.005" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.12 0.005 0.015" pos="0 0.145 0.01" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.12 0.005 0.015" pos="0 -0.145 0.01" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.005 0.15 0.015" pos="0.115 0 0.01" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
+                <geom size="0.005 0.15 0.015" pos="-0.115 0 0.01" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
+                <site name="site_tray_cleaning" pos="0 0 0.01" size="0.02" rgba="0 0 1 0.5"></site>
+            </body>
+        </body>
+
+        <!-- Tools -->
+        <body name="scalpel" pos="-0.35 0.1 0.85">
+            <joint name="scalpel:joint" type="free" limited="false"></joint>
+            <geom name="scalpel_handle" size="0.01 0.05 0.01" pos="0 -0.03 0" type="box" material="scalpel_mat" mass="0.08"></geom>
+            <geom name="scalpel_blade" size="0.005 0.03 0.005" pos="0 0.05 0" type="box" material="metal_mat" mass="0.02"></geom>
+            <site name="scalpel_site" pos="0 0 0" size="0.01" rgba="1 1 1 0"></site>
+        </body>
+        
+        <body name="grasper" pos="-0.35 0.2 0.85">
+            <joint name="grasper:joint" type="free" limited="false"></joint>
+            <geom name="grasper_handle" size="0.01 0.05 0.01" pos="0 -0.03 0" type="box" material="grasper_mat" mass="0.08"></geom>
+            <geom name="grasper_prong1" size="0.005 0.03 0.005" pos="0.005 0.05 0" type="box" material="metal_mat" mass="0.01"></geom>
+            <geom name="grasper_prong2" size="0.005 0.03 0.005" pos="-0.005 0.05 0" type="box" material="metal_mat" mass="0.01"></geom>
+            <site name="grasper_site" pos="0 0 0" size="0.01" rgba="1 1 1 0"></site>
+        </body>
+
+        <body name="scissors" pos="-0.35 0.3 0.85">
+            <joint name="scissors:joint" type="free" limited="false"></joint>
+            <geom name="scissors_handle" size="0.02 0.02 0.01" pos="0 -0.04 0" type="box" material="scissors_mat" mass="0.04"></geom>
+            <geom name="scissors_shaft" size="0.01 0.02 0.01" pos="0 -0.01 0" type="box" material="metal_mat" mass="0.01"></geom>
+            <geom name="scissors_blade1" size="0.002 0.03 0.005" pos="0.002 0.04 0" type="box" material="metal_mat" mass="0.005"></geom>
+            <geom name="scissors_blade2" size="0.002 0.03 0.005" pos="-0.002 0.04 0" type="box" material="metal_mat" mass="0.005"></geom>
+            <site name="scissors_site" pos="0 0 0" size="0.01" rgba="1 1 1 0"></site>
+        </body>
+
+        <!-- Human Obstacles -->
+        <body name="surgeon_body" pos="0.5 0.6 0.8">
+            <geom size="0.2 0.6" type="cylinder" rgba="0.2 0.6 0.8 1" mass="50" contype="1" conaffinity="1"></geom>
+            <site name="surgeon_site" pos="0 -0.3 0.1" size="0.05" rgba="1 1 1 0"></site>
+        </body>
+        
+        <body name="assistant_body" pos="-0.5 0.6 0.8">
+            <geom size="0.2 0.6" type="cylinder" rgba="0.8 0.4 0.2 1" mass="50" contype="1" conaffinity="1"></geom>
+            <site name="assistant_site" pos="0 -0.3 0.1" size="0.05" rgba="1 1 1 0"></site>
+        </body>
+
+        <!-- Franka Panda Robot -->
+        <body pos="0 -0.1 0.4">
+            <include file="assets/franka_assets/chain.xml"></include>
+        </body>
+        
+    </worldbody>
+
+    <include file="assets/franka_assets/actuator.xml"></include>
+</mujoco>
