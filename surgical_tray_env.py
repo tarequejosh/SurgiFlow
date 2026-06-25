@@ -11,7 +11,7 @@ class SurgicalTrayEnv(MujocoRobotEnv):
     """
     Custom Surgical Tray Environment for Multi-Object, Multi-Tray workflows.
     """
-    def __init__(self, model_path="surgical_env.xml", workflow_path=2, **kwargs):
+    def __init__(self, model_path="surgical_env.xml", workflow_path=2, reward_type="dense", **kwargs):
         self.objects = ["scalpel", "grasper", "scissors"]
         self.trays = {
             "IN_STORAGE": "site_tray_storage",
@@ -23,6 +23,7 @@ class SurgicalTrayEnv(MujocoRobotEnv):
         # We track how long the surgeon has held it to simulate usage
         self.surgeon_timers = {obj: 0 for obj in self.objects}
         self.workflow_path = workflow_path
+        self.reward_type = reward_type
         
         # Threshold for detecting if object is on a tray
         self.tray_threshold = 0.1
@@ -86,6 +87,21 @@ class SurgicalTrayEnv(MujocoRobotEnv):
         if self.model.na != 0:
             self.data.act[:] = None
             
+        # Randomize Table Positions
+        base_positions = {
+            "table_storage": [-0.5, 0.2, 0.4],
+            "table_surgeon": [0.5, 0.2, 0.4],
+            "table_cleaning": [0.0, 0.45, 0.4]
+        }
+        for table_name, base_pos in base_positions.items():
+            body_id = self.model.body(table_name).id
+            offset_x = self.np_random.uniform(-0.05, 0.05)
+            offset_y = self.np_random.uniform(-0.05, 0.05)
+            self.model.body_pos[body_id] = [base_pos[0] + offset_x, base_pos[1] + offset_y, base_pos[2]]
+            
+        import mujoco
+        mujoco.mj_forward(self.model, self.data)
+            
         # Randomize object positions on Storage Tray (Tray 1)
         storage_site_id = self.model.site("site_tray_storage").id
         storage_pos = self.data.site_xpos[storage_site_id]
@@ -131,8 +147,23 @@ class SurgicalTrayEnv(MujocoRobotEnv):
         self.data.ctrl[:] = action
 
     def step(self, action):
-        """Override step to update our state machine."""
+        """Override step to update our state machine and dynamic obstacles."""
         obs, reward, terminated, truncated, info = super().step(action)
+        
+        # 1. Dynamic Human Obstacles
+        # Pacing Assistant
+        assistant_jnt_id = self.model.jnt("assistant_slider").id
+        assistant_qpos_idx = self.model.jnt_qposadr[assistant_jnt_id]
+        self.data.qpos[assistant_qpos_idx] = 0.2 * np.sin(self.data.time * 2.0)
+        
+        # Sweeping Surgeon Arm
+        arm_jnt_id = self.model.jnt("surgeon_arm_joint").id
+        arm_qpos_idx = self.model.jnt_qposadr[arm_jnt_id]
+        # Check if any tool is at surgeon to trigger reach
+        is_tool_at_surgeon = any(state == "AT_SURGEON" for state in self.object_states.values())
+        target_angle = -1.2 if is_tool_at_surgeon else 0.0
+        current_angle = self.data.qpos[arm_qpos_idx]
+        self.data.qpos[arm_qpos_idx] = current_angle + 0.1 * (target_angle - current_angle)
         
         # Update State Machine Logic
         self._update_object_states()
@@ -145,14 +176,52 @@ class SurgicalTrayEnv(MujocoRobotEnv):
             sparse_reward = float(sparse_reward)
             
         dense_reward = self._compute_dense_reward()
-        reward = sparse_reward + dense_reward
         
         info["sparse_reward"] = sparse_reward
         info["dense_reward"] = dense_reward
         info["is_success"] = self.is_success(obs["achieved_goal"], obs["desired_goal"])
         
+        # Collision Check for binary failure
+        collision_detected = False
+        import mujoco
+        for i in range(self.data.ncon):
+            contact = self.data.contact[i]
+            geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, contact.geom1)
+            geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, contact.geom2)
+            if geom1_name and geom2_name:
+                human_geoms = ["surgeon_body", "surgeon_arm", "assistant_body"]
+                # Look for collisions with anything not human or floor
+                if any(h in geom1_name for h in human_geoms) and "floor" not in geom2_name and "surgeon" not in geom2_name and "assistant" not in geom2_name:
+                    collision_detected = True
+                if any(h in geom2_name for h in human_geoms) and "floor" not in geom1_name and "surgeon" not in geom1_name and "assistant" not in geom1_name:
+                    collision_detected = True
+                    
+        # Dropped tool check
+        tool_dropped = False
+        for obj in self.objects:
+            obj_pos = self.data.site_xpos[self.model.site(f"{obj}_site").id]
+            if obj_pos[2] < 0.35 and self.object_states[obj] != "IN_USE":
+                tool_dropped = True
+
+        if self.reward_type == "binary":
+            if collision_detected or tool_dropped:
+                reward = -1.0
+                terminated = True
+            elif info["is_success"]:
+                reward = 1.0
+                terminated = True
+            else:
+                reward = 0.0
+        else:
+            reward = sparse_reward + dense_reward
+            if collision_detected:
+                reward -= 1.0 # Penalize collisions heavily
+        
         if info["is_success"]:
             info["completion_time_seconds"] = self.data.time - getattr(self, "start_time", 0.0)
+            
+        info["collision"] = collision_detected
+        info["dropped"] = tool_dropped
         
         return self._get_obs(), reward, terminated, truncated, info
 

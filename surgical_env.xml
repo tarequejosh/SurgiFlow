@@ -39,13 +39,11 @@
         <!-- Floor -->
         <geom name="floor0" pos="0 0 0" size="2 2 1" type="plane" condim="3" material="floor_mat"></geom>
 
-        <!-- Table -->
-        <body name="table0" pos="0 0.2 0.4">
-            <!-- Table top (widened to fit 3 distinct zones) -->
-            <geom name="table0" size="0.8 0.4 0.4" type="box" mass="2000" material="table_mat"></geom>
-            
+        <!-- Tables -->
+        <body name="table_storage" pos="-0.5 0.2 0.4">
+            <geom name="table_storage_geom" size="0.25 0.3 0.4" type="box" mass="2000" material="table_mat"></geom>
             <!-- Tray 1: Storage (Left) -->
-            <body name="tray_storage" pos="-0.5 0.0 0.405">
+            <body name="tray_storage" pos="0 0.0 0.405">
                 <geom size="0.12 0.15 0.005" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
                 <geom size="0.12 0.005 0.015" pos="0 0.145 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
                 <geom size="0.12 0.005 0.015" pos="0 -0.145 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
@@ -53,9 +51,12 @@
                 <geom size="0.005 0.15 0.015" pos="-0.115 0 0.01" type="box" material="tray1_mat" contype="0" conaffinity="0"></geom>
                 <site name="site_tray_storage" pos="0 0 0.01" size="0.02" rgba="1 0 0 0.5"></site>
             </body>
+        </body>
 
+        <body name="table_surgeon" pos="0.5 0.2 0.4">
+            <geom name="table_surgeon_geom" size="0.25 0.3 0.4" type="box" mass="2000" material="table_mat"></geom>
             <!-- Tray 2: Surgeon (Right) -->
-            <body name="tray_surgeon" pos="0.5 0.0 0.405">
+            <body name="tray_surgeon" pos="0 0.0 0.405">
                 <geom size="0.12 0.15 0.005" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
                 <geom size="0.12 0.005 0.015" pos="0 0.145 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
                 <geom size="0.12 0.005 0.015" pos="0 -0.145 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
@@ -63,9 +64,12 @@
                 <geom size="0.005 0.15 0.015" pos="-0.115 0 0.01" type="box" material="tray2_mat" contype="0" conaffinity="0"></geom>
                 <site name="site_tray_surgeon" pos="0 0 0.01" size="0.02" rgba="0 1 0 0.5"></site>
             </body>
+        </body>
 
-            <!-- Tray 3: Cleaning (Center Back - Separated) -->
-            <body name="tray_cleaning" pos="0.0 0.25 0.405">
+        <body name="table_cleaning" pos="0.0 0.45 0.4">
+            <geom name="table_cleaning_geom" size="0.2 0.2 0.4" type="box" mass="2000" material="table_mat"></geom>
+            <!-- Tray 3: Cleaning (Center Back) -->
+            <body name="tray_cleaning" pos="0 0 0.405">
                 <geom size="0.12 0.15 0.005" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
                 <geom size="0.12 0.005 0.015" pos="0 0.145 0.01" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
                 <geom size="0.12 0.005 0.015" pos="0 -0.145 0.01" type="box" material="tray3_mat" contype="0" conaffinity="0"></geom>
@@ -104,9 +108,15 @@
         <body name="surgeon_body" pos="0.5 0.6 0.8">
             <geom size="0.2 0.6" type="cylinder" rgba="0.2 0.6 0.8 1" mass="50" contype="1" conaffinity="1"></geom>
             <site name="surgeon_site" pos="0 -0.3 0.1" size="0.05" rgba="1 1 1 0"></site>
+            <!-- Dynamic Surgeon Arm -->
+            <body name="surgeon_arm" pos="-0.1 -0.2 0.1">
+                <joint name="surgeon_arm_joint" type="hinge" axis="0 0 1" limited="true" range="-1.57 1.57"></joint>
+                <geom size="0.05 0.25" type="cylinder" rgba="0.2 0.6 0.8 1" pos="0 -0.25 0" euler="1.57 0 0" mass="5" contype="1" conaffinity="1"></geom>
+            </body>
         </body>
         
         <body name="assistant_body" pos="-0.5 0.6 0.8">
+            <joint name="assistant_slider" type="slide" axis="1 0 0" limited="true" range="-0.3 0.3"></joint>
             <geom size="0.2 0.6" type="cylinder" rgba="0.8 0.4 0.2 1" mass="50" contype="1" conaffinity="1"></geom>
             <site name="assistant_site" pos="0 -0.3 0.1" size="0.05" rgba="1 1 1 0"></site>
         </body>

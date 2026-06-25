@@ -7,24 +7,34 @@ env/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.ipynb_checkpoints/
 
-# Logs and Tensorboard
+# Logs, metrics, and tensorboard outputs
 *.log
+*.out
+*.npz
+*.csv
 logs/
 tensorboard_logs/
 MUJOCO_LOG.TXT
 
-# Models and Checkpoints
+# Models and checkpoints
 models/
 *.zip
 *.pt
 *.pth
 
+# Generated documents and media
+*.docx
+*.png
+*.gif
+*.jpg
+*.jpeg
+*.bmp
+*.svg
+
 # IDE and OS
 .DS_Store
 .vscode/
 .idea/
-
-# Images/Gifs (optional, you can comment this out if you want to push the visual representations)
-# *.png
-# *.gif
