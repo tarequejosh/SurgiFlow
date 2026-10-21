@@ -25,6 +25,17 @@ models/
 *.pt
 *.pth
 
+# Perception: datasets, downloaded weights and generated outputs
+perception/datasets/
+perception/weights/
+perception/demo_outputs/
+perception/runs/
+runs/
+*.onnx
+*.engine
+*.cache
+events.out.tfevents.*
+
 # Generated documents and media
 *.docx
 *.png

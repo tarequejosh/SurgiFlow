@@ -1,0 +1,27 @@
+# SurgeoNet Surgical Instruments Dataset (GCPR 2024 / DFKI)
+# Configured for YOLO training in SurgiFlow perception
+
+path: E:/Research/SurgiFlow/perception/datasets/surgical_tools/synthetic_yolo # absolute path
+train: train/images
+val: val/images
+test: test/images
+
+# Keypoints format (12 2D joints/tips per tool)
+kpt_shape: [12, 2]
+
+# 14 Classes (0 to 13):
+names:
+  0: Background
+  1: Overholt Clamp
+  2: Metz. Scissor
+  3: Sur. Scissor
+  4: Needle Holder
+  5: Sur. Forceps
+  6: Atr. Forceps
+  7: Scalpel
+  8: Retractor
+  9: Hook
+  10: Lig. Clamp
+  11: Peri. Clamp
+  12: Bowl
+  13: Tong

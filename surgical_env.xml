@@ -128,5 +128,12 @@
         
     </worldbody>
 
+    <!-- The pacing assistant's cylinder overlaps the storage/cleaning tables; it is
+         kinematically driven, so these contacts are spurious -->
+    <contact>
+        <exclude body1="assistant_body" body2="table_storage"></exclude>
+        <exclude body1="assistant_body" body2="table_cleaning"></exclude>
+    </contact>
+
     <include file="assets/franka_assets/actuator.xml"></include>
 </mujoco>

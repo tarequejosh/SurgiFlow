@@ -1,0 +1,8 @@
+# Computer Vision Dependencies for Surgical Instrument Segmentation
+ultralytics>=8.3.0
+opencv-python>=4.8.0
+matplotlib>=3.7.0
+pillow>=9.5.0
+roboflow>=1.1.0
+pandas>=2.0.0
+scipy>=1.10.0

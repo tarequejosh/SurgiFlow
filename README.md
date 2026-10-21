@@ -10,7 +10,7 @@ A custom Reinforcement Learning (RL) simulation environment built using **MuJoCo
 - **Dynamic Workflow Paths:**
    - `Path 1`: Direct Tool Exchange (Storage → Surgeon → Storage)
    - `Path 2`: Sterile Processing (Storage → Surgeon → Cleaning → Storage)
-- **Soft Actor-Critic (SAC):** Leverages `stable-baselines3` to train highly efficient continuous control policies guided by carefully tuned dense reward shaping (approach, grasp, delivery, and safety penalties).
+- **Soft Actor-Critic (SAC):** Leverages `stable-baselines3` to train highly efficient continuous control policies guided by carefully tuned dense reward shaping (workflow-stage progress, approach, grasp, delivery, and safety penalties). Actions in `[-1, 1]` are mapped onto each actuator's joint/gripper control range.
 
 ## Installation
 1. Clone the repository and navigate into it.
@@ -21,7 +21,9 @@ A custom Reinforcement Learning (RL) simulation environment built using **MuJoCo
    ```
 3. Install the dependencies:
    ```bash
-   pip install gymnasium gymnasium-robotics stable-baselines3[extra] mujoco imageio tensorboard
+   pip install -r requirements.txt
+   # Perception module (YOLO pose):
+   pip install -r perception/requirements.txt
    ```
 
 ## Usage

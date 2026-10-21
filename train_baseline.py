@@ -35,9 +35,11 @@ def main():
     # Using MultiInputPolicy to natively support the Dict observation space!
     model = SAC("MultiInputPolicy", env, verbose=1, tensorboard_log=f"./tensorboard_logs/{args.reward_type}/")
     
-    # Setup Evaluation Callback to test the model during training
+    # Setup Evaluation Callback to test the model during training. It needs its own env:
+    # evaluating on the training env resets it mid-episode and mixes eval episodes into monitor.csv
+    eval_env = Monitor(TimeLimit(SurgicalTrayEnv(render_mode=None, reward_type=args.reward_type), max_episode_steps=500))
     eval_callback = EvalCallback(
-        env, 
+        eval_env,
         best_model_save_path=f'./models/best_{args.reward_type}_model/',
         log_path=f'./logs/{args.reward_type}/', 
         eval_freq=10000, 

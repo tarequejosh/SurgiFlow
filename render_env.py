@@ -8,13 +8,12 @@ try:
 except ImportError:
     HAS_SB3 = False
 
-def render_env():
+def render_env(model_path="./models/best_dense_model/best_model.zip"):
     print("Initializing SurgicalTrayEnv for rendering...")
     # Initialize the environment with render mode
     env = SurgicalTrayEnv(render_mode="rgb_array")
-    
-    # Check if we have a trained model
-    model_path = "./models/best_model/best_model.zip"
+
+    # Check if we have a trained model (train_baseline.py saves to ./models/best_{reward_type}_model/)
     model = None
     if HAS_SB3 and os.path.exists(model_path):
         print(f"Found trained model at {model_path}. Loading SAC policy...")
@@ -56,4 +55,8 @@ def render_env():
     print("Done!")
 
 if __name__ == "__main__":
-    render_env()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_path", type=str, default="./models/best_dense_model/best_model.zip", help="Trained SAC .zip to render")
+    args = parser.parse_args()
+    render_env(args.model_path)

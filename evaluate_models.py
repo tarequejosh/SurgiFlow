@@ -44,7 +44,8 @@ def main():
                 
             done = terminated or truncated
             
-            if info.get("is_success"):
+            # Dense episodes keep running after success, so record the time only once
+            if info.get("is_success") and not episode_success:
                 episode_success = True
                 if "completion_time_seconds" in info:
                     completion_times.append(info["completion_time_seconds"])
